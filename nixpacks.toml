@@ -1,0 +1,16 @@
+[phases.setup]
+# `nodejs_22` already bundles npm/npx in nixpkgs. Listing `npm` directly
+# can fail depending on the pinned nixpkgs snapshot (undefined variable 'npm').
+# Native Node deps (bcrypt, sharp, etc.) may fall back to source builds on Linux.
+# Ensure common build tooling exists so `npm ci` doesn't fail.
+nixPkgs = ["nodejs_22", "python3", "gcc", "gnumake", "pkg-config"]
+
+[phases.install]
+# Ensure devDependencies are installed even if the platform sets NODE_ENV=production at build time.
+cmds = ["NODE_ENV=development NPM_CONFIG_PRODUCTION=false npm ci --include=dev"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npx prisma migrate deploy && npm start"

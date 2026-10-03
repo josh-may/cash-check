@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String      @id @default(cuid())
+  email                  String      @unique
+  firstName              String
+  lastName               String
+  password               String
+  hasPaid                Boolean     @default(false)
+  isSuperAdmin           Boolean     @default(false)
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  stripeCurrentPeriodEnd DateTime?
+  stripeCustomerId       String?     @unique
+  stripePriceId          String?
+  stripeSubscriptionId   String?     @unique
+  plaidItems             PlaidItem[]
+  transactions           Transaction[]
+}
+
+model PlaidItem {
+  id              String        @id @default(cuid())
+  userId          String
+  accessToken     String
+  itemId          String        @unique
+  institutionName String?
+  status          String        @default("good")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  lastSyncedAt    DateTime?
+  accounts        Account[]
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]
+
+  @@index([userId])
+}
+
+model Account {
+  id               String    @id @default(cuid())
+  plaidItemId      String
+  plaidAccountId   String    @unique
+  name             String
+  officialName     String?
+  mask             String?
+  type             String
+  subtype          String?
+  currentBalance   Float?
+  availableBalance Float?
+  isoCurrencyCode  String?
+  minimumBalance   Float?
+  tag              String    @default("Main")
+  isExcluded       Boolean   @default(false)
+  sortOrder        Int       @default(0)
+  closedAt         DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  plaidItem        PlaidItem @relation(fields: [plaidItemId], references: [id], onDelete: Cascade)
+  balances         Balance[]
+
+  @@index([plaidItemId])
+}
+
+model Transaction {
+  id                     String     @id @default(cuid())
+  plaidItemId            String?
+  userId                 String?
+  plaidTransactionId     String?    @unique
+  accountId              String?
+  tag                    String?
+  amount                 Float
+  isoCurrencyCode        String?
+  unofficialCurrencyCode String?
+  category               String?
+  categoryId             String?
+  date                   DateTime
+  name                   String
+  merchantName           String?
+  pending                Boolean    @default(false)
+  isExcluded             Boolean    @default(false)
+  source                 String     @default("plaid")
+  importBatchId          String?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+  plaidItem              PlaidItem? @relation(fields: [plaidItemId], references: [id], onDelete: Cascade)
+  user                   User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([plaidItemId])
+  @@index([userId])
+  @@index([date])
+  @@index([tag])
+}
+
+model Balance {
+  id        String   @id @default(cuid())
+  accountId String
+  month     DateTime
+  balance   Float
+  createdAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, month])
+  @@index([accountId])
+  @@index([month])
+}

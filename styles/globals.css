@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Shared palette from the selected cashflow design. */
+:root {
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #d4d4d4;
+}
+
+@theme {
+  --color-canvas: #0a0a0a;
+  --color-surface: #101010;
+  --color-raised: #181818;
+  --color-line: #242424;
+  --color-line-strong: #444444;
+  --color-content: #d4d4d4;
+  --color-muted: #858585;
+  --color-quiet: #606060;
+  --color-positive: #4ba977;
+  --color-negative: #d96b6b;
+  --color-warning: #c4a565;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  /* Same readable row rhythm for reports, previews and transaction dialogs. */
+  .data-table {
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .data-table thead th {
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+
+  .data-table tbody strong {
+    font-weight: 500;
+  }
+}
+
+@media (min-width: 640px) {
+  /* Outside the utilities layer so existing compact table padding cannot win. */
+  .data-table th,
+  .data-table td {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+}
